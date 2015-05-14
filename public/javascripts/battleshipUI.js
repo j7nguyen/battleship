@@ -28,6 +28,7 @@ BattleshipUI.prototype.checkShot = function (data) {
   var col = data.col;
   var tile = this.grids[0][row][col];
   tile.html('&#9679;');
+
   if (result.hit) {
     this.socket.emit("HIT", data);
     tile.css('color','red');
@@ -47,7 +48,14 @@ BattleshipUI.prototype.renderResponse = function (data) {
 
   var tile = this.grids[1][row][col];
 
+  if (data.response === 'hit') {
+    this.boom.play();
+  } else {
+    this.splash.play();
+  }
+  
   tile.addClass(data.response);
+  tile.removeClass("untouched");
   console.log(tile);
   console.log(data);
 
@@ -55,6 +63,9 @@ BattleshipUI.prototype.renderResponse = function (data) {
 
 BattleshipUI.prototype.changeState = function (data) {
   console.log(data.state);
+
+  $("#info").html(data.state);
+
   this.bs.state = data.state;
 }
 
@@ -67,7 +78,7 @@ BattleshipUI.prototype.createGrids = function () {
     myShots.push([]);
 
     for (var j = 0; j < 10; j++) {
-      var $tile = $("<div class='tile' data-row='" + i + "' data-col='" + j + "'></div>");
+      var $tile = $("<div class='tile untouched' data-row='" + i + "' data-col='" + j + "'></div>");
 
       myShips[i].push($tile.clone());
       myShots[i].push($tile.clone());
@@ -165,11 +176,12 @@ BattleshipUI.prototype.placePreview = function (e) {
 }
 
 BattleshipUI.prototype.handleShot = function (e) {
-  if (this.bs.state === "SHOOT") {
+  if (this.bs.state === "SHOOT" && $(e.target).hasClass('untouched')) {
     var $bomb = $('<div class="bomb"></div>');
     var row = $(e.target).data('row');
     var col = $(e.target).data('col');
     var that = this;
+
     $(e.target).append($bomb);
     $bomb.animate({
       width: 0,
@@ -178,16 +190,10 @@ BattleshipUI.prototype.handleShot = function (e) {
       top: "10px"
     }, 750, function(){
       this.remove();
-      that.boom.play();
-
-
-      // $(e.target).addClass('hit');
-      // or
-      // $(e.target).addClass('miss');
+      that.socket.emit("SHOT", {col: col, row: row});
     });
 
-    this.socket.emit("SHOT", {col: col, row: row});
-    // alert("row: " + row + ", col: " + col);
+    // this.socket.emit("SHOT", {col: col, row: row});
   }
 };
 

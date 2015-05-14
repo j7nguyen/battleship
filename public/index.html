@@ -7,21 +7,26 @@
   </head>
 
   <body>
-    <div class="boards">
-      <h2>My Shots</h2>
-      <div class="myShots"></div>
-      <h2>My Ships</h2>
-      <div class="myShips"></div>
-    </div>
+    <div id=wrapper>
+      <div class="boards">
+        <h2>My Shots</h2>
+        <div class="myShots"></div>
+        <h2>My Ships</h2>
+        <div class="myShips"></div>
 
-    <div class="available"></div>
+
+      </div>
+
+      <div id=info></div>
+      <div class="available"></div>
+    </div>
 
 
     <script>
       var bs = new Battleship();
       var socket = io();
       var battleshipUI = new BattleshipUI($('.boards'), bs, socket);
-      
+
     </script>
   </body>
 </html>

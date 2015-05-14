@@ -64,14 +64,12 @@ Battleship.prototype.checkShot = function (coords) {
   this.ships.forEach(function (ship) {
     ship.segments.forEach(function (segment) {
       if (segment[0] === coords.row && segment[1] === coords.col) {
-        console.log("segment changed");
         segment[2] = "hit";
         hit = true;
       }
-    })
+    });
 
     if (!ship.checkSunk()) {
-      console.log("game is not over yet");
       gameOver = false
     }
   })

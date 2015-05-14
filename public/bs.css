@@ -1,3 +1,11 @@
+#wrapper {
+
+}
+
+.boards {
+
+}
+
 .tile {
   width: 20px;
   height: 20px;
@@ -22,10 +30,11 @@
   width: 100px;
 }
 
-.tile:hover {
+.tile.untouched:hover {
   background-color: rgba(0,0,0,0.2);
   cursor: pointer;
 }
+
 
 .tile.highlight:hover, .highlight {
   background-color: rgba(246,255,105,.6);
