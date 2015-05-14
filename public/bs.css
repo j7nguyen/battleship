@@ -1,0 +1,98 @@
+.tile {
+  width: 20px;
+  height: 20px;
+  border: 1px black solid;
+  float: left;
+  position: relative;
+  text-align: center;
+}
+
+.ship-tile {
+  width: 20px;
+  height: 20px;
+  border: 1px black solid;
+  background: #A29990;
+  float:left;
+}
+
+.available-ship {
+  height: 20px;
+  margin: 10px;
+
+  width: 100px;
+}
+
+.tile:hover {
+  background-color: rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+.tile.highlight:hover, .highlight {
+  background-color: rgba(246,255,105,.6);
+}
+
+div {
+  box-sizing: border-box;
+}
+
+.row {
+  width: 200px;
+  display: block;
+}
+
+.myShots, .myShips {
+  margin: 20px;
+  height: 200px;
+  width: 200px;
+  background: #58D1DC;
+  position: relative;
+}
+
+.ship {
+  background: #A29990;
+}
+
+.selected {
+  background: yellow;
+}
+
+.ship:hover {
+  background: #A29990;
+  cursor: default;
+}
+
+.available {
+  height: 200px;
+  width: 200px;
+  border: 1px solid black;
+  float: left;
+  margin-top: 200px;
+  padding: 30px;
+}
+
+.boards {
+  float: left;
+}
+
+.bomb {
+  left: -10px;
+  top: -10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 40px;
+  background: black;
+  position: absolute;
+  animation-name: drop-bomb;
+  animation-duration: 1s;
+  -webkit-animation-name: drop-bomb;
+  -webkit-animation-duration: 1s;
+}
+
+
+.hit {
+  background: red;
+}
+
+.miss {
+  background: white;
+}
