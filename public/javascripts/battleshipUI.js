@@ -12,12 +12,28 @@ window.BattleshipUI = BattleshipUI = function ($root, bs, socket) {
   socket.on('CHANGE_STATE', this.changeState.bind(this));
   socket.on('SHOT', this.checkShot.bind(this));
   socket.on('RESPONSE', this.renderResponse.bind(this));
-
+  socket.on('MESSAGE', this.displayMessage.bind(this));
 
   this.boom = new Audio('./resources/bomb.wav');
   this.splash = new Audio('./resources/splash.wav');
   $('.myShips .tile').on('click', this.handlePlace.bind(this));
   $('.myShots .tile').on('click', this.handleShot.bind(this));
+
+  $('#submit').on('click', this.sendMessage.bind(this));
+};
+
+BattleshipUI.prototype.displayMessage = function (data) {
+
+  console.log(data.id + " said: " + data.message);
+  var $li = $("<li>").html(data.id + " said: " + data.message);
+
+  $("ul").append($li);
+}
+
+BattleshipUI.prototype.sendMessage = function () {
+  var message = $("#message").val();
+  $("#message").val("");
+  this.socket.emit("MESSAGE", {message: message, id: this.socket.id});
 };
 
 BattleshipUI.prototype.checkShot = function (data) {
@@ -32,6 +48,9 @@ BattleshipUI.prototype.checkShot = function (data) {
   if (result.hit) {
     this.socket.emit("HIT", data);
     tile.css('color','red');
+
+    this.shakeBoard($(".myShips"));
+
     if (result.gameOver) {
       this.socket.emit("GAME_OVER", {winner: "me"});
     }
@@ -39,6 +58,24 @@ BattleshipUI.prototype.checkShot = function (data) {
     this.socket.emit("MISS", data);
     tile.css('color','white');
   }
+};
+
+BattleshipUI.prototype.shakeBoard = function (board) {
+  board
+    .animate({left:"50px", top: "-50px"}, 80)
+    .animate({left: "-50px", top: "50px"}, 80)
+    .animate({left:"35px", top: "35px"}, 80)
+    .animate({left: "-35px", top: "-35px"}, 80)
+    .animate({left:"15px", top: "-15px"}, 80)
+    .animate({left: "-15px", top: "15px"}, 80)
+    .animate({left:"5px", top: "-5px"}, 80)
+    .animate({left: "-5px", top: "5px"}, 80)
+    .animate({left: "0px", top: "0px"}, 80)
+
+    $('body').toggleClass('red');
+    setTimeout(function(){
+      $('body').toggleClass('red');
+    }, 1500);
 };
 
 BattleshipUI.prototype.renderResponse = function (data) {
@@ -53,7 +90,7 @@ BattleshipUI.prototype.renderResponse = function (data) {
   } else {
     this.splash.play();
   }
-  
+
   tile.addClass(data.response);
   tile.removeClass("untouched");
   console.log(tile);
@@ -64,7 +101,7 @@ BattleshipUI.prototype.renderResponse = function (data) {
 BattleshipUI.prototype.changeState = function (data) {
   console.log(data.state);
 
-  $("#info").html(data.state);
+  $(".status").html(data.state);
 
   this.bs.state = data.state;
 }
