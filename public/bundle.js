@@ -1,3 +1,85 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+window.Battleship = Battleship = function () {
+  this.shipsToPlace = [2, 3, 3, 4, 5];
+  this.ships = [];
+  this.taken = [];
+  this.state = GameStates.WAITING_FOR_OPPONENT;
+};
+
+Battleship.prototype.createShips = function () {
+  var ships = [2, 3, 3, 4, 5];
+
+  for (var i = 0; i < 5; i++) {
+    ships[i] = new Ship({ length: ships[i] });
+  };
+  return ships;
+};
+
+Battleship.prototype.notTaken = function (segments) {
+  var conflict = false;
+  this.taken.forEach(function(takenSeg){
+    segments.forEach(function(shipSeg){
+      if (takenSeg[0] === shipSeg[0] && takenSeg[1] === shipSeg[1]) {
+        conflict = true;
+      }
+    });
+  });
+  return !conflict;
+};
+
+Battleship.prototype.placeShip = function (options) {
+  var front = options.front;
+  var back = options.back;
+  var length;
+  var segments = [];
+
+  if (front[0] === back[0] || front[1] === back[1]) {
+    length = Math.abs(front[0] - back[0] + front[1] - back[1]) + 1;
+    options["length"] = length;
+  }
+
+  var index = this.shipsToPlace.indexOf(length);
+
+  if (index > -1) {
+    var ship = new Ship (options);
+    if (this.notTaken(ship.segments)) {
+      this.ships.push(ship);
+      this.shipsToPlace.splice(index, 1);
+      this.taken = this.taken.concat(ship.segments);
+      segments = ship.segments;
+    }
+  }
+
+  if (this.shipsToPlace.length === 0) {
+    this.state = GameStates.SHOOT;
+  }
+
+  return segments;
+};
+
+Battleship.prototype.checkShot = function (coords) {
+  var hit = false;
+  var gameOver = true;
+  this.ships.forEach(function (ship) {
+    ship.segments.forEach(function (segment) {
+      if (segment[0] === coords.row && segment[1] === coords.col) {
+        segment[2] = "hit";
+        hit = true;
+      }
+    });
+
+    if (!ship.checkSunk()) {
+      gameOver = false
+    }
+  })
+
+  return {
+    hit: hit,
+    gameOver: gameOver
+    };
+}
+
+},{}],2:[function(require,module,exports){
 window.BattleshipUI = BattleshipUI = function ($root, bs, socket) {
   this.$root = $root;
   this.bs = bs;
@@ -22,43 +104,7 @@ window.BattleshipUI = BattleshipUI = function ($root, bs, socket) {
   $('#submit').on('click', this.sendMessage.bind(this));
 };
 
-BattleshipUI.prototype.displayMessage = function (data) {
 
-  console.log(data.id + " said: " + data.message);
-  var $li = $("<li>").html(data.id + " said: " + data.message);
-
-  $("ul").append($li);
-}
-
-BattleshipUI.prototype.sendMessage = function () {
-  var message = $("#message").val();
-  $("#message").val("");
-  this.socket.emit("MESSAGE", {message: message, id: this.socket.id});
-};
-
-BattleshipUI.prototype.checkShot = function (data) {
-
-  var result = this.bs.checkShot(data);
-  console.log(result);
-  var row = data.row;
-  var col = data.col;
-  var tile = this.grids[0][row][col];
-  tile.html('&#9679;');
-
-  if (result.hit) {
-    this.socket.emit("HIT", data);
-    tile.css('color','red');
-
-    this.shakeBoard($(".myShips"));
-
-    if (result.gameOver) {
-      this.socket.emit("GAME_OVER", {winner: "me"});
-    }
-  } else {
-    this.socket.emit("MISS", data);
-    tile.css('color','white');
-  }
-};
 
 BattleshipUI.prototype.shakeBoard = function (board) {
   board
@@ -93,15 +139,13 @@ BattleshipUI.prototype.renderResponse = function (data) {
 
   tile.addClass(data.response);
   tile.removeClass("untouched");
-  console.log(tile);
-  console.log(data);
 
 };
 
 BattleshipUI.prototype.changeState = function (data) {
-  console.log(data.state);
+  var stateString = GameStates[data.state];
 
-  $(".status").html(data.state);
+  $(".status").html("<h2>" + stateString + "</h2>");
 
   this.bs.state = data.state;
 }
@@ -151,7 +195,7 @@ BattleshipUI.prototype.render = function () {
 
 BattleshipUI.prototype.renderAvailable = function() {
   var $avail = $('.available')
-  $avail.empty();
+  $avail.empty().append("<h3>Ships to Place</h3>");
   this.bs.shipsToPlace.forEach(function(length) {
     var $ship = $("<div class='available-ship'></div>");
     for (var i = 0; i < length; i++) {
@@ -234,6 +278,40 @@ BattleshipUI.prototype.handleShot = function (e) {
   }
 };
 
+BattleshipUI.prototype.displayMessage = function (data) {
+  var $li = $("<li>").html(data.id + " said: " + data.message);
+  $("ul").append($li);
+}
+
+BattleshipUI.prototype.sendMessage = function () {
+  var message = $("#message").val();
+  $("#message").val("");
+  this.socket.emit("MESSAGE", {message: message, id: this.socket.id});
+};
+
+BattleshipUI.prototype.checkShot = function (data) {
+
+  var result = this.bs.checkShot(data);
+  var row = data.row;
+  var col = data.col;
+  var tile = this.grids[0][row][col];
+  tile.html('&#9679;');
+
+  if (result.hit) {
+    this.socket.emit("HIT", data);
+    tile.css('color','red');
+
+    this.shakeBoard($(".myShips"));
+
+    if (result.gameOver) {
+      this.socket.emit("GAME_OVER", {winner: "me"});
+    }
+  } else {
+    this.socket.emit("MISS", data);
+    tile.css('color','white');
+  }
+};
+
 window.coordsBetween = function  (a, b) {
   var result = [];
   var length;
@@ -258,3 +336,40 @@ window.coordsBetween = function  (a, b) {
 
   return result;
 };
+
+},{}],3:[function(require,module,exports){
+GameStates = {
+  PLACE_SHIPS: 'Place your ships!',
+  SHOOT: 'SHOOT!',
+  WAITING_FOR_OPPONENT: "Waiting for opponent's shot",
+  WAITING_FOR_OPPONENT_SHIPS: 'Waiting for opponent to place ships'
+};
+
+},{}],4:[function(require,module,exports){
+window.Ship = Ship = function (options) {
+  this.length = options.length;
+  this.front = options.front;
+  this.back = options.back;
+  this.segments = this.createSegments();
+};
+
+Ship.prototype.createSegments = function () {
+  var segments = window.coordsBetween(this.front, this.back);
+  segments.forEach(function (segment) {
+    segment.push(null);
+  })
+
+  return segments;
+};
+
+Ship.prototype.checkSunk = function () {
+  var sunk = true
+  this.segments.forEach(function (segment) {
+    if (segment[2] !== "hit") {
+      sunk = false;
+    }
+  });
+  return sunk;
+};
+
+},{}]},{},[1,2,3,4]);

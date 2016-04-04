@@ -1,5 +1,53 @@
-#wrapper {
+body {
+  background-color: #213E56;
+}
 
+div {
+  box-sizing: border-box;
+}
+
+#wrapper {
+  max-width: 1000px;
+  color: #B5CBDE;
+  margin: 0 auto;
+  text-align: center;
+}
+
+#game {
+  overflow: hidden;
+  margin: auto;
+  display: inline-block;
+}
+
+#logo {
+  text-align: center;
+}
+
+#logo img {
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.boards {
+  float: left;
+}
+
+#info {
+  float: left;
+  margin: 20px;
+}
+
+.available, .messages {
+  width: 400px;
+  border: 1px solid black;
+  margin-top: 5px;
+  position: relative;
+}
+
+#instructions {
+  text-align: left;
+  /*margin: 20px;*/
+  width: 400px;
 }
 
 .red {
@@ -14,6 +62,8 @@
 
 .boards {
   position: relative;
+  text-align: center;
+
 }
 
 .tile {
@@ -36,7 +86,6 @@
 .available-ship {
   height: 20px;
   margin: 10px;
-
   width: 100px;
 }
 
@@ -50,9 +99,7 @@
   background-color: rgba(246,255,105,.6);
 }
 
-div {
-  box-sizing: border-box;
-}
+
 
 .row {
   width: 200px;
@@ -68,7 +115,7 @@ div {
 }
 
 .ship {
-  background: #A29990;
+  background: #88817B;
 }
 
 .selected {
@@ -80,14 +127,7 @@ div {
   cursor: default;
 }
 
-.available, .messages {
-  height: 200px;
-  width: 400px;
-  border: 1px solid black;
-  margin-top: 5px;
-  padding: 30px;
-  position: relative;
-}
+
 
 .messages {
   padding: 0;
@@ -99,10 +139,6 @@ ul {
   padding-left: 5px;
   margin-top: 5px;
 
-}
-
-.boards {
-  float: left;
 }
 
 .bomb {
@@ -119,10 +155,7 @@ ul {
   -webkit-animation-duration: 1s;
 }
 
-#info {
-  margin-top: 100px;
-  float: left;
-}
+
 
 .hit {
   background: red;
